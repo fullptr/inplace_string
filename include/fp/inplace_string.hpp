@@ -64,13 +64,8 @@ public:
         return d_data[pos];
     }
 
-    constexpr reference operator[](size_type pos) {
-        return d_data[pos];
-    }
-
-    constexpr const_reference operator[](size_type pos) const {
-        return d_data[pos];
-    }
+    constexpr reference operator[](size_type pos) { return d_data[pos]; }
+    constexpr const_reference operator[](size_type pos) const { return d_data[pos]; }
 
     constexpr reference front() { return d_data[0]; }
     constexpr const_reference front() const { return d_data[0]; }
