@@ -32,10 +32,35 @@ public:
 
     bool operator==(const iterator& other) const { return d_value == other.d_value; }
 
-    CharT* operator&() { return d_value; }
+    // TODO: Fix
+    // static_assert(std::contiguous_iterator<iterator>);
 };
 
+template <
+    class CharT,
+    std::size_t N,
+    class Traits = std::char_traits<CharT>
+>
+class const_iterator
+{
+    const CharT* d_value;
 
+public:
+    const_iterator(const CharT* value) : d_value{value} {}
+
+    const CharT& operator*() const { return *d_value; }
+    const CharT* operator->() const { return d_value; }
+
+    const_iterator& operator++() { ++d_value; return *this; }
+    const_iterator& operator--() { --d_value; return *this; }
+    const_iterator operator++(int) { auto current = d_value; ++d_value; return {current}; }
+    const_iterator operator--(int) { auto current = d_value; --d_value; return {current}; }
+
+    bool operator==(const const_iterator& other) const { return d_value == other.d_value; }
+
+    // TODO: Fix
+    // static_assert(std::contiguous_iterator<const_iterator>);
+};
 
 }
 
@@ -67,7 +92,7 @@ public:
 
     // TODO: add these
     using iterator = detail::iterator<CharT, N, Traits>;
-    using const_iterator = const pointer;
+    using const_iterator = detail::const_iterator<CharT, N, Traits>;
     using reverse_iterator = void;
     using const_reverse_iterator = void;
 
