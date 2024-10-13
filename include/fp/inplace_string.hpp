@@ -6,12 +6,48 @@
 #include <stdexcept>
 
 namespace fp {
+namespace detail {
 
-template <
-    class CharT,
-    std::size_t N,
-    class Traits = std::char_traits<CharT>
->
+template <class ElementType, class DifferenceType>
+class iterator_impl
+{
+public:
+    using element_type = ElementType;
+    using difference_type = DifferenceType;
+    using iterator_category = std::contiguous_iterator_tag;
+private:
+    element_type* d_value;
+public:
+    iterator_impl(element_type* value = nullptr) : d_value{value} {}
+    element_type* operator->() const { return d_value; }
+    element_type& operator*() const { return *d_value; }
+    element_type& operator[](difference_type idx) const { return *(d_value + idx); }
+    iterator_impl& operator++() { ++d_value; return *this; }
+    iterator_impl operator++(int) { auto orig = d_value; ++d_value; return {orig}; }
+    iterator_impl& operator--() { --d_value; return *this; }
+    iterator_impl operator--(int) { auto orig = d_value; --d_value; return {orig}; }
+    iterator_impl& operator+=(difference_type n) { d_value += n; return *this; }
+    iterator_impl& operator-=(difference_type n) { d_value -= n; return *this; }
+    friend auto operator<=>(iterator_impl, iterator_impl) = default;
+    friend difference_type operator-(iterator_impl lhs, iterator_impl rhs) { return rhs.d_value - lhs.d_value; }
+    friend iterator_impl operator+(iterator_impl it, difference_type n) { return {it.d_value + n}; }
+    friend iterator_impl operator-(iterator_impl it, difference_type n) { return {it.d_value - n}; }
+    friend iterator_impl operator+(difference_type n, iterator_impl it) { return {it.d_value + n}; }
+};
+
+template <class InplaceString>
+using iterator = iterator_impl<
+    typename InplaceString::value_type,
+    typename InplaceString::difference_type>;
+
+template <class InplaceString>
+using const_iterator = iterator_impl<
+    const typename InplaceString::value_type,
+    typename InplaceString::difference_type>;
+
+}
+
+template <class CharT, std::size_t N, class Traits = std::char_traits<CharT>>
 class basic_inplace_string
 {
     CharT       d_data[N + 1];
@@ -33,11 +69,15 @@ public:
     using pointer = value_type*;
     using const_pointer = const value_type*;
 
-    // TODO: add these
-    using iterator = pointer;
-    using const_iterator = const pointer;
-    using reverse_iterator = void;
-    using const_reverse_iterator = void;
+    using iterator = detail::iterator<basic_inplace_string>;
+    using const_iterator = detail::const_iterator<basic_inplace_string>;
+
+    static_assert(std::contiguous_iterator<iterator>);
+    static_assert(std::contiguous_iterator<const_iterator>);
+    
+    // These don't work currently, need to make iterator and const_iterator satisfy the correct concepts
+    using reverse_iterator = std::reverse_iterator<iterator>;
+    using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
 public:
     static_assert(N > 0); // TODO: specialise the class for size 0
@@ -77,13 +117,21 @@ public:
     constexpr pointer c_str() noexcept { return d_data; }
 
     // Iterators
-    constexpr iterator begin() noexcept { return d_data; }
-    constexpr const_iterator begin() const noexcept { return d_data; }
-    constexpr const_iterator cbegin() const noexcept { return d_data; }
+    constexpr iterator begin() noexcept { return {d_data}; }
+    constexpr const_iterator begin() const noexcept { return {d_data}; }
+    constexpr const_iterator cbegin() const noexcept { return begin(); }
 
-    constexpr iterator end() noexcept { return d_data + d_size; }
-    constexpr const_iterator end() const noexcept { return d_data + d_size; }
-    constexpr const_iterator cend() const noexcept { return d_data + d_size; }
+    constexpr iterator end() noexcept { return {d_data + d_size}; }
+    constexpr const_iterator end() const noexcept { return {d_data + d_size}; }
+    constexpr const_iterator cend() const noexcept { return end(); }
+
+    constexpr reverse_iterator rbegin() noexcept { return reverse_iterator{end()}; }
+    constexpr const_reverse_iterator rbegin() const noexcept { return const_reverse_iterator{end()}; }
+    constexpr const_reverse_iterator crbegin() const noexcept { return rbegin(); }
+
+    constexpr reverse_iterator rend() noexcept { return reverse_iterator{begin()}; }
+    constexpr const_reverse_iterator rend() const noexcept { return const_reverse_iterator{begin()}; }
+    constexpr const_reverse_iterator crend() const noexcept { return rend(); }
 
     // Capacity
     constexpr bool empty() const noexcept { return d_size != 0; }
