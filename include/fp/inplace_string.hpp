@@ -6,6 +6,38 @@
 #include <stdexcept>
 
 namespace fp {
+namespace detail {
+
+template <
+    class CharT,
+    std::size_t N,
+    class Traits = std::char_traits<CharT>
+>
+class iterator
+{
+    CharT* d_value;
+
+public:
+    iterator(CharT* value) : d_value{value} {}
+
+    CharT& operator*() { return *d_value; }
+    const CharT& operator*() const { return *d_value; }
+    CharT* operator->() { return d_value; }
+    const CharT* operator->() const { return d_value; }
+
+    iterator& operator++() { ++d_value; return *this; }
+    iterator& operator--() { --d_value; return *this; }
+    iterator operator++(int) { auto current = d_value; ++d_value; return {current}; }
+    iterator operator--(int) { auto current = d_value; --d_value; return {current}; }
+
+    bool operator==(const iterator& other) const { return d_value == other.d_value; }
+
+    CharT* operator&() { return d_value; }
+};
+
+
+
+}
 
 template <
     class CharT,
@@ -34,7 +66,7 @@ public:
     using const_pointer = const value_type*;
 
     // TODO: add these
-    using iterator = pointer;
+    using iterator = detail::iterator<CharT, N, Traits>;
     using const_iterator = const pointer;
     using reverse_iterator = void;
     using const_reverse_iterator = void;
@@ -77,13 +109,13 @@ public:
     constexpr pointer c_str() noexcept { return d_data; }
 
     // Iterators
-    constexpr iterator begin() noexcept { return d_data; }
-    constexpr const_iterator begin() const noexcept { return d_data; }
-    constexpr const_iterator cbegin() const noexcept { return d_data; }
+    constexpr iterator begin() noexcept { return {d_data}; }
+    constexpr const_iterator begin() const noexcept { return {d_data}; }
+    constexpr const_iterator cbegin() const noexcept { return {d_data}; }
 
-    constexpr iterator end() noexcept { return d_data + d_size; }
-    constexpr const_iterator end() const noexcept { return d_data + d_size; }
-    constexpr const_iterator cend() const noexcept { return d_data + d_size; }
+    constexpr iterator end() noexcept { return {d_data + d_size}; }
+    constexpr const_iterator end() const noexcept { return {d_data + d_size}; }
+    constexpr const_iterator cend() const noexcept { return {d_data + d_size}; }
 
     // Capacity
     constexpr bool empty() const noexcept { return d_size != 0; }
