@@ -50,9 +50,6 @@ using const_iterator = iterator_impl<
 template <class CharT, std::size_t N, class Traits = std::char_traits<CharT>>
 class basic_inplace_string
 {
-    CharT       d_data[N + 1];
-    std::size_t d_size;
-
 public:
     using traits_type = Traits;
     using value_type = CharT;
@@ -79,6 +76,10 @@ public:
     using reverse_iterator = std::reverse_iterator<iterator>;
     using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
+private:
+    CharT     d_data[N + 1];
+    size_type d_size;
+
 public:
     static_assert(N > 0); // TODO: specialise the class for size 0
     constexpr basic_inplace_string() noexcept
@@ -87,11 +88,21 @@ public:
         d_data[0] = '\0';
     }
 
+    constexpr basic_inplace_string(size_type count, CharT ch)
+        : d_size{count}
+    {
+        if (count > N) throw std::bad_alloc{}; // same behaviour as inplace_vector
+        for (size_type i = 0; i < count; ++i) d_data[i] = ch;
+        d_data[count] = '\0';
+    }
+
     constexpr basic_inplace_string(const basic_inplace_string& other) = default;
     constexpr basic_inplace_string(basic_inplace_string&& other) = default;
     constexpr basic_inplace_string& operator=(const basic_inplace_string& other) = default;
     constexpr basic_inplace_string& operator=(basic_inplace_string&& other) = default;
     constexpr ~basic_inplace_string() = default;
+
+    constexpr operator std::basic_string_view<CharT, Traits>() const noexcept { return {d_data, d_size}; }
 
     // Element Access
     constexpr reference at(size_type pos) {
@@ -134,10 +145,13 @@ public:
     constexpr const_reverse_iterator crend() const noexcept { return rend(); }
 
     // Capacity
-    constexpr bool empty() const noexcept { return d_size != 0; }
+    constexpr bool empty() const noexcept { return d_size == 0; }
     constexpr size_type size() const noexcept { return d_size; }
     constexpr size_type length() const noexcept { return d_size; }
-    constexpr size_type capacity() const noexcept { return N; }
+    static constexpr size_type max_size() noexcept { return N; }
+    static constexpr void reserve(size_type size) { if (size > N) throw std::bad_alloc{}; }
+    static constexpr size_type capacity() noexcept { return N; }
+    static constexpr void shrink_to_fit() noexcept {}
 
     // Modifiers
     constexpr void clear() noexcept {
@@ -149,12 +163,14 @@ public:
     {
         if (d_size == N) return nullptr;
         d_data[d_size++] = value;
+        d_data[d_size] = '\0';
         return &d_data[d_size - 1];
     }
 
     constexpr reference unchecked_push_back(CharT value) noexcept
     {
         d_data[d_size++] = value;
+        d_data[d_size] = '\0';
         return d_data[d_size - 1];
     }
 
@@ -162,10 +178,154 @@ public:
     {
         if (d_size == N) throw std::bad_alloc{};
         d_data[d_size++] = value;
+        d_data[d_size] = '\0';
         return d_data[d_size - 1];
     }
 
     // Search
+    size_type find(const basic_inplace_string& str, size_type pos = 0) const
+    {
+        return std::string_view{*this}.find(str, pos);
+    }
+    size_type find(const CharT* s, size_type pos, size_type count) const
+    {
+        return std::string_view{*this}.find(s, pos, count);
+    }
+    size_type find(const CharT* s, size_type pos = 0) const
+    {
+        return std::string_view{*this}.find(s, pos);
+    }
+    size_type find(CharT ch, size_type pos = 0) const
+    {
+        return std::string_view{*this}.find(ch, pos);
+    }
+    template <class StringViewLike>
+    size_type find(const StringViewLike& t, size_type pos = 0) const
+        noexcept(noexcept(std::is_nothrow_convertible_v<const StringViewLike&,
+                                                        basic_inplace_string>))
+    {
+        return std::string_view{*this}.find(t, pos);
+    }
+
+    size_type rfind(const basic_inplace_string& str, size_type pos = 0) const
+    {
+        return std::string_view{*this}.rfind(str, pos);
+    }
+    size_type rfind(const CharT* s, size_type pos, size_type count) const
+    {
+        return std::string_view{*this}.rfind(s, pos, count);
+    }
+    size_type rfind(const CharT* s, size_type pos = 0) const
+    {
+        return std::string_view{*this}.rfind(s, pos);
+    }
+    size_type rfind(CharT ch, size_type pos = 0) const
+    {
+        return std::string_view{*this}.rfind(ch, pos);
+    }
+    template <class StringViewLike>
+    size_type rfind(const StringViewLike& t, size_type pos = 0) const
+        noexcept(noexcept(std::is_nothrow_convertible_v<const StringViewLike&,
+                                                        basic_inplace_string>))
+    {
+        return std::string_view{*this}.rfind(t, pos);
+    }
+
+    size_type find_first_of(const basic_inplace_string& str, size_type pos = 0) const
+    {
+        return std::string_view{*this}.find_first_of(str, pos);
+    }
+    size_type find_first_of(const CharT* s, size_type pos, size_type count) const
+    {
+        return std::string_view{*this}.find_first_of(s, pos, count);
+    }
+    size_type find_first_of(const CharT* s, size_type pos = 0) const
+    {
+        return std::string_view{*this}.find_first_of(s, pos);
+    }
+    size_type find_first_of(CharT ch, size_type pos = 0) const
+    {
+        return std::string_view{*this}.find_first_of(ch, pos);
+    }
+    template <class StringViewLike>
+    size_type find_first_of(const StringViewLike& t, size_type pos = 0) const
+        noexcept(noexcept(std::is_nothrow_convertible_v<const StringViewLike&,
+                                                        basic_inplace_string>))
+    {
+        return std::string_view{*this}.find_first_of(t, pos);
+    }
+
+    size_type find_first_not_of(const basic_inplace_string& str, size_type pos = 0) const
+    {
+        return std::string_view{*this}.find_first_not_of(str, pos);
+    }
+    size_type find_first_not_of(const CharT* s, size_type pos, size_type count) const
+    {
+        return std::string_view{*this}.find_first_not_of(s, pos, count);
+    }
+    size_type find_first_not_of(const CharT* s, size_type pos = 0) const
+    {
+        return std::string_view{*this}.find_first_not_of(s, pos);
+    }
+    size_type find_first_not_of(CharT ch, size_type pos = 0) const
+    {
+        return std::string_view{*this}.find_first_not_of(ch, pos);
+    }
+    template <class StringViewLike>
+    size_type find_first_not_of(const StringViewLike& t, size_type pos = 0) const
+        noexcept(noexcept(std::is_nothrow_convertible_v<const StringViewLike&,
+                                                        basic_inplace_string>))
+    {
+        return std::string_view{*this}.find_first_not_of(t, pos);
+    }
+
+    size_type find_last_of(const basic_inplace_string& str, size_type pos = 0) const
+    {
+        return std::string_view{*this}.find_last_of(str, pos);
+    }
+    size_type find_last_of(const CharT* s, size_type pos, size_type count) const
+    {
+        return std::string_view{*this}.find_last_of(s, pos, count);
+    }
+    size_type find_last_of(const CharT* s, size_type pos = 0) const
+    {
+        return std::string_view{*this}.find_last_of(s, pos);
+    }
+    size_type find_last_of(CharT ch, size_type pos = 0) const
+    {
+        return std::string_view{*this}.find_last_of(ch, pos);
+    }
+    template <class StringViewLike>
+    size_type find_last_of(const StringViewLike& t, size_type pos = 0) const
+        noexcept(noexcept(std::is_nothrow_convertible_v<const StringViewLike&,
+                                                        basic_inplace_string>))
+    {
+        return std::string_view{*this}.find_last_of(t, pos);
+    }
+
+    size_type find_last_not_of(const basic_inplace_string& str, size_type pos = 0) const
+    {
+        return std::string_view{*this}.find_last_not_of(str, pos);
+    }
+    size_type find_last_not_of(const CharT* s, size_type pos, size_type count) const
+    {
+        return std::string_view{*this}.find_last_not_of(s, pos, count);
+    }
+    size_type find_last_not_of(const CharT* s, size_type pos = 0) const
+    {
+        return std::string_view{*this}.find_last_not_of(s, pos);
+    }
+    size_type find_last_not_of(CharT ch, size_type pos = 0) const
+    {
+        return std::string_view{*this}.find_last_not_of(ch, pos);
+    }
+    template <class StringViewLike>
+    size_type find_last_not_of(const StringViewLike& t, size_type pos = 0) const
+        noexcept(noexcept(std::is_nothrow_convertible_v<const StringViewLike&,
+                                                        basic_inplace_string>))
+    {
+        return std::string_view{*this}.find_last_not_of(t, pos);
+    }
 
     // Operations
 };
