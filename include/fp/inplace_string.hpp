@@ -8,69 +8,46 @@
 namespace fp {
 namespace detail {
 
-template <class InplaceString>
-class iterator
+template <class ElementType, class DifferenceType>
+class iterator_impl
 {
 public:
-    using value_type = typename InplaceString::value_type;
-    using element_type = value_type;
-    using difference_type = typename InplaceString::difference_type;
+    using element_type = ElementType;
+    using difference_type = DifferenceType;
     using iterator_category = std::contiguous_iterator_tag;
 private:
-    value_type* d_value;
+    element_type* d_value;
 public:
-    iterator(element_type* value = nullptr) : d_value{value} {}
+    iterator_impl(element_type* value = nullptr) : d_value{value} {}
     element_type* operator->() const { return d_value; }
     element_type& operator*() const { return *d_value; }
     element_type& operator[](difference_type idx) const { return *(d_value + idx); }
-    iterator& operator++() { ++d_value; return *this; }
-    iterator operator++(int) { auto orig = d_value; ++d_value; return {orig}; }
-    iterator& operator--() { --d_value; return *this; }
-    iterator operator--(int) { auto orig = d_value; --d_value; return {orig}; }
-    iterator& operator+=(difference_type n) { d_value += n; return *this; }
-    iterator& operator-=(difference_type n) { d_value -= n; return *this; }
-    friend auto operator<=>(iterator, iterator) = default;
-    friend difference_type operator-(iterator lhs, iterator rhs) { return rhs.d_value - lhs.d_value; }
-    friend iterator operator+(iterator it, difference_type n) { return {it.d_value + n}; }
-    friend iterator operator-(iterator it, difference_type n) { return {it.d_value - n}; }
-    friend iterator operator+(difference_type n, iterator it) { return {it.d_value + n}; }
+    iterator_impl& operator++() { ++d_value; return *this; }
+    iterator_impl operator++(int) { auto orig = d_value; ++d_value; return {orig}; }
+    iterator_impl& operator--() { --d_value; return *this; }
+    iterator_impl operator--(int) { auto orig = d_value; --d_value; return {orig}; }
+    iterator_impl& operator+=(difference_type n) { d_value += n; return *this; }
+    iterator_impl& operator-=(difference_type n) { d_value -= n; return *this; }
+    friend auto operator<=>(iterator_impl, iterator_impl) = default;
+    friend difference_type operator-(iterator_impl lhs, iterator_impl rhs) { return rhs.d_value - lhs.d_value; }
+    friend iterator_impl operator+(iterator_impl it, difference_type n) { return {it.d_value + n}; }
+    friend iterator_impl operator-(iterator_impl it, difference_type n) { return {it.d_value - n}; }
+    friend iterator_impl operator+(difference_type n, iterator_impl it) { return {it.d_value + n}; }
 };
 
 template <class InplaceString>
-class const_iterator
-{
-public:
-    using value_type = typename InplaceString::value_type;
-    using element_type = const value_type;
-    using difference_type = typename InplaceString::difference_type;
-    using iterator_category = std::contiguous_iterator_tag;
-private:
-    const value_type* d_value;
-public:
-    const_iterator(element_type* value = nullptr) : d_value{value} {}
-    element_type* operator->() const { return d_value; }
-    element_type& operator*() const { return *d_value; }
-    element_type& operator[](difference_type idx) const { return *(d_value + idx); }
-    const_iterator& operator++() { ++d_value; return *this; }
-    const_iterator operator++(int) { auto orig = d_value; ++d_value; return {orig}; }
-    const_iterator& operator--() { --d_value; return *this; }
-    const_iterator operator--(int) { auto orig = d_value; --d_value; return {orig}; }
-    const_iterator& operator+=(difference_type n) { d_value += n; return *this; }
-    const_iterator& operator-=(difference_type n) { d_value -= n; return *this; }
-    friend auto operator<=>(const_iterator, const_iterator) = default;
-    friend difference_type operator-(const_iterator lhs, const_iterator rhs) { return rhs.d_value - lhs.d_value; }
-    friend const_iterator operator+(const_iterator it, difference_type n) { return {it.d_value + n}; }
-    friend const_iterator operator-(const_iterator it, difference_type n) { return {it.d_value - n}; }
-    friend const_iterator operator+(difference_type n, const_iterator it) { return {it.d_value + n}; }
-};
+using iterator = iterator_impl<
+    typename InplaceString::value_type,
+    typename InplaceString::difference_type>;
+
+template <class InplaceString>
+using const_iterator = iterator_impl<
+    const typename InplaceString::value_type,
+    typename InplaceString::difference_type>;
 
 }
 
-template <
-    class CharT,
-    std::size_t N,
-    class Traits = std::char_traits<CharT>
->
+template <class CharT, std::size_t N, class Traits = std::char_traits<CharT>>
 class basic_inplace_string
 {
     CharT       d_data[N + 1];
