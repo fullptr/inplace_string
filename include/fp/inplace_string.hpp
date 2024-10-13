@@ -149,12 +149,14 @@ public:
     {
         if (d_size == N) return nullptr;
         d_data[d_size++] = value;
+        d_data[d_size] = '\0';
         return &d_data[d_size - 1];
     }
 
     constexpr reference unchecked_push_back(CharT value) noexcept
     {
         d_data[d_size++] = value;
+        d_data[d_size] = '\0';
         return d_data[d_size - 1];
     }
 
@@ -162,6 +164,7 @@ public:
     {
         if (d_size == N) throw std::bad_alloc{};
         d_data[d_size++] = value;
+        d_data[d_size] = '\0';
         return d_data[d_size - 1];
     }
 
