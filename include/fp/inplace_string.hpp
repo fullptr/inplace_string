@@ -14,8 +14,6 @@ template <
 >
 class basic_inplace_string
 {
-    static_assert(N > 0); // TODO: specialise the class for size 0
-
     CharT       d_data[N + 1];
     std::size_t d_size;
 
@@ -42,7 +40,8 @@ public:
     using const_reverse_iterator = void;
 
 public:
-    constexpr basic_inplace_string() noexcept // TODO: handle N == 0
+    static_assert(N > 0); // TODO: specialise the class for size 0
+    constexpr basic_inplace_string() noexcept
         : d_size{0}
     {
         d_data[0] = '\0';
