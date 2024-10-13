@@ -50,9 +50,6 @@ using const_iterator = iterator_impl<
 template <class CharT, std::size_t N, class Traits = std::char_traits<CharT>>
 class basic_inplace_string
 {
-    CharT       d_data[N + 1];
-    std::size_t d_size;
-
 public:
     using traits_type = Traits;
     using value_type = CharT;
@@ -79,6 +76,10 @@ public:
     using reverse_iterator = std::reverse_iterator<iterator>;
     using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
+private:
+    CharT     d_data[N + 1];
+    size_type d_size;
+
 public:
     static_assert(N > 0); // TODO: specialise the class for size 0
     constexpr basic_inplace_string() noexcept
@@ -93,13 +94,6 @@ public:
         if (count > N) throw std::bad_alloc{}; // same behaviour as inplace_vector
         for (size_type i = 0; i < count; ++i) d_data[i] = ch;
         d_data[count] = '\0';
-    }
-
-    template <class InputIt>
-    constexpr basic_inplace_string(InputIt first, InputIt last)
-        : d_size{std::distance(first, last)}
-    {
-        std::copy(begin, last, begin());
     }
 
     constexpr basic_inplace_string(const basic_inplace_string& other) = default;
@@ -154,7 +148,10 @@ public:
     constexpr bool empty() const noexcept { return d_size == 0; }
     constexpr size_type size() const noexcept { return d_size; }
     constexpr size_type length() const noexcept { return d_size; }
-    constexpr size_type capacity() const noexcept { return N; }
+    static constexpr size_type max_size() noexcept { return N; }
+    static constexpr void reserve(size_type size) { if (size > N) throw std::bad_alloc{}; }
+    static constexpr size_type capacity() noexcept { return N; }
+    static constexpr void shrink_to_fit() noexcept {}
 
     // Modifiers
     constexpr void clear() noexcept {
