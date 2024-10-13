@@ -87,11 +87,28 @@ public:
         d_data[0] = '\0';
     }
 
+    constexpr basic_inplace_string(size_type count, CharT ch)
+        : d_size{count}
+    {
+        if (count > N) throw std::bad_alloc{}; // same behaviour as inplace_vector
+        for (size_type i = 0; i < count; ++i) d_data[i] = ch;
+        d_data[count] = '\0';
+    }
+
+    template <class InputIt>
+    constexpr basic_inplace_string(InputIt first, InputIt last)
+        : d_size{std::distance(first, last)}
+    {
+        std::copy(begin, last, begin());
+    }
+
     constexpr basic_inplace_string(const basic_inplace_string& other) = default;
     constexpr basic_inplace_string(basic_inplace_string&& other) = default;
     constexpr basic_inplace_string& operator=(const basic_inplace_string& other) = default;
     constexpr basic_inplace_string& operator=(basic_inplace_string&& other) = default;
     constexpr ~basic_inplace_string() = default;
+
+    constexpr operator std::basic_string_view<CharT, Traits>() const noexcept { return {d_data, d_size}; }
 
     // Element Access
     constexpr reference at(size_type pos) {
@@ -134,7 +151,7 @@ public:
     constexpr const_reverse_iterator crend() const noexcept { return rend(); }
 
     // Capacity
-    constexpr bool empty() const noexcept { return d_size != 0; }
+    constexpr bool empty() const noexcept { return d_size == 0; }
     constexpr size_type size() const noexcept { return d_size; }
     constexpr size_type length() const noexcept { return d_size; }
     constexpr size_type capacity() const noexcept { return N; }
