@@ -183,6 +183,29 @@ public:
     }
 
     // Search
+    size_type find(const basic_inplace_string& str, size_type pos = 0) const
+    {
+        return std::string_view{*this}.find(str, pos);
+    }
+    size_type find(const CharT* s, size_type pos, size_type count) const
+    {
+        return std::string_view{*this}.find(s, pos, count);
+    }
+    size_type find(const CharT* s, size_type pos = 0) const
+    {
+        return std::string_view{*this}.find(s, pos);
+    }
+    size_type find(CharT ch, size_type pos = 0) const
+    {
+        return std::string_view{*this}.find(ch, pos);
+    }
+    template <class StringViewLike>
+    size_type find(const StringViewLike& t, size_type pos = 0) const
+        noexcept(noexcept(std::is_nothrow_convertible_v<const StringViewLike&,
+                                                        basic_inplace_string>))
+    {
+        return std::string_view{*this}.find(t, pos);
+    }
 
     // Operations
 };
