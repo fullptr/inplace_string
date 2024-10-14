@@ -173,6 +173,32 @@ public:
         return d_data[d_size - 1];
     }
 
+    constexpr pop_back()
+    {
+        d_size--;
+        d_data[d_size] = '\0';
+    }
+
+
+    // constexpr void resize(size_type count)
+    // std::string has this overload, but I don't think this should be provided here
+    // because the default value is surely the null char and including a bunch of those
+    // at the end seems like a bad idea
+
+    constexpr void resize(size_type count, CharT ch)
+    {
+        if (count > N) throw std::bad_alloc{};
+        if (count < d_size) {
+            d_size = count;
+            d_data[d_size] = '\0';
+        } else {
+            // TODO: This can just be a memset + setting the size and null char
+            for (std::size_t i = 0; i < count - d_size; ++i) {
+                unchecked_push_back(ch);
+            }
+        }
+    }
+
     // Search
     size_type find(const basic_inplace_string& str, size_type pos = 0) const
     {

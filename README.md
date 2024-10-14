@@ -70,6 +70,7 @@ DONE    try_push_back
 DONE    unchecked_push_back
 DONE    pop_back
         append
+        try_append
         append_range
         try_append_range
         operator+=
