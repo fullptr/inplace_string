@@ -6,6 +6,7 @@ The interface is identical to std::string, except for the following differences.
 * All overloads of functions taking allocators have been removed.
 * `try_push_back` and `unchecked_push_back` alongside `push_back`.
 * `try_append_range` alongside `append_range`.
+* `try_append` alongside `append`.
 * No overload for `resize` taking just a count, see code for reason.
 * `swap` can always be noexcept since there is no allocator.
 
@@ -80,7 +81,7 @@ DONE    pop_back
         replace_with_range
         copy
 DONE    resize
-        resize_and_override
+        resize_and_overwrite
 DONE    swap
         
         # Search
@@ -136,3 +137,4 @@ DONE    contains
 ## Open Questions
 * Should iterators for different size inplace_strings be different types. Surely yes, but the current implementation doesn't.
 * How should size_type, difference_type, pointer and const_pointer be specified? string gets them from the allocator_traits, whereas string_view just uses the obvious size_t, ptrdiff_t, CharT* and const CharT* respectively. inplace_vector also does what string_view does (but with value_type instead of CharT for the pointer typedefs), so that's what I've gone with here.
+* Should there be a `unchecked_append`?
