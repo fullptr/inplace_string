@@ -1,4 +1,6 @@
-# std::inplace_string
+# fp::inplace_string
+Intended to act as an implementation for a proposal for std::inplace_string.
+
 The interface is identical to std::string, except for the following differences.
 * `get_allocator` has been removed.
 * `allocator_type` member type has been removed.
