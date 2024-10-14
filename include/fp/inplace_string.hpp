@@ -53,28 +53,19 @@ class basic_inplace_string
 public:
     using traits_type = Traits;
     using value_type = CharT;
-
-    // TODO: revisit - basic_string uses allocator_traits to set there, which doesnt apply here,
-    // but string_view just uses size_t and ptrdiff_t, so going with that
     using size_type = std::size_t;
     using difference_type = std::ptrdiff_t;
-
     using reference = value_type&;
     using const_reference = const value_type&;
-
-    // TODO: revisit - same reason as above
     using pointer = value_type*;
     using const_pointer = const value_type*;
-
     using iterator = detail::iterator<basic_inplace_string>;
     using const_iterator = detail::const_iterator<basic_inplace_string>;
+    using reverse_iterator = std::reverse_iterator<iterator>;
+    using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
     static_assert(std::contiguous_iterator<iterator>);
     static_assert(std::contiguous_iterator<const_iterator>);
-    
-    // These don't work currently, need to make iterator and const_iterator satisfy the correct concepts
-    using reverse_iterator = std::reverse_iterator<iterator>;
-    using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
 private:
     CharT     d_data[N + 1];
