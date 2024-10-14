@@ -179,7 +179,6 @@ public:
         d_data[d_size] = '\0';
     }
 
-
     // constexpr void resize(size_type count)
     // std::string has this overload, but I don't think this should be provided here
     // because the default value is surely the null char and including a bunch of those
@@ -197,6 +196,12 @@ public:
                 unchecked_push_back(ch);
             }
         }
+    }
+
+    constexpr void swap(basic_inplace_string& other) noexcept
+    {
+        std::swap(d_data, other.d_data);
+        std::swap(d_size, other.d_size);
     }
 
     // Search

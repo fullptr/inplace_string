@@ -1,11 +1,13 @@
 # std::inplace_string
-The interface is identical to std::string, except for the following differences
-* `get_allocator` has been removed
-* `allocator_type` member type has been removed
-* No pmr typedefs
+The interface is identical to std::string, except for the following differences.
+* `get_allocator` has been removed.
+* `allocator_type` member type has been removed.
+* No pmr typedefs.
 * All overloads of functions taking allocators have been removed.
-* `try_push_back` and `unchecked_push_back` alongside `push_back`
-* `try_append_range` alongside `append_range`
+* `try_push_back` and `unchecked_push_back` alongside `push_back`.
+* `try_append_range` alongside `append_range`.
+* No overload for `resize` taking just a count, see code for reason.
+* `swap` can always be noexcept since there is no allocator.
 
 This matches the delta between `std::vector` and `std::inplace_vector`.
 
@@ -77,9 +79,9 @@ DONE    pop_back
         replace
         replace_with_range
         copy
-        resize
+DONE    resize
         resize_and_override
-        swap
+DONE    swap
         
         # Search
 DONE    find
