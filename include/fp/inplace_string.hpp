@@ -350,6 +350,44 @@ public:
     }
 
     // Operations
+    constexpr bool starts_with(std::basic_string_view<CharT, Traits> sv) const noexcept
+    {
+        return std::string_view{*this}.starts_with(sv);
+    }
+    constexpr bool starts_with(CharT ch) const noexcept
+    {
+        return std::string_view{*this}.starts_with(ch);
+    }
+    constexpr bool starts_with(const CharT* s) const
+    {
+        return std::string_view{*this}.starts_with(s);
+    }
+
+    constexpr bool ends_with(std::basic_string_view<CharT, Traits> sv) const noexcept
+    {
+        return std::string_view{*this}.ends_with(sv);
+    }
+    constexpr bool ends_with(CharT ch) const noexcept
+    {
+        return std::string_view{*this}.ends_with(ch);
+    }
+    constexpr bool ends_with(const CharT* s) const
+    {
+        return std::string_view{*this}.ends_with(s);
+    }
+
+    constexpr bool contains(std::basic_string_view<CharT, Traits> sv) const noexcept
+    {
+        return std::string_view{*this}.contains(sv);
+    }
+    constexpr bool contains(CharT ch) const noexcept
+    {
+        return std::string_view{*this}.contains(ch);
+    }
+    constexpr bool contains(const CharT* s) const
+    {
+        return std::string_view{*this}.contains(s);
+    }
 };
 
 template <std::size_t N>

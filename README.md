@@ -93,9 +93,9 @@ DONE    find_last_not_of
         
         # Operations
         compare
-        starts_with
-        ends_width
-        contains
+DONE    starts_with
+DONE    ends_width
+DONE    contains
         substr
         
         npos
