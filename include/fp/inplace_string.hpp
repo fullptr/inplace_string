@@ -53,28 +53,19 @@ class basic_inplace_string
 public:
     using traits_type = Traits;
     using value_type = CharT;
-
-    // TODO: revisit - basic_string uses allocator_traits to set there, which doesnt apply here,
-    // but string_view just uses size_t and ptrdiff_t, so going with that
     using size_type = std::size_t;
     using difference_type = std::ptrdiff_t;
-
     using reference = value_type&;
     using const_reference = const value_type&;
-
-    // TODO: revisit - same reason as above
     using pointer = value_type*;
     using const_pointer = const value_type*;
-
     using iterator = detail::iterator<basic_inplace_string>;
     using const_iterator = detail::const_iterator<basic_inplace_string>;
+    using reverse_iterator = std::reverse_iterator<iterator>;
+    using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
     static_assert(std::contiguous_iterator<iterator>);
     static_assert(std::contiguous_iterator<const_iterator>);
-    
-    // These don't work currently, need to make iterator and const_iterator satisfy the correct concepts
-    using reverse_iterator = std::reverse_iterator<iterator>;
-    using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
 private:
     CharT     d_data[N + 1];
@@ -180,6 +171,37 @@ public:
         d_data[d_size++] = value;
         d_data[d_size] = '\0';
         return d_data[d_size - 1];
+    }
+
+    constexpr pop_back()
+    {
+        d_size--;
+        d_data[d_size] = '\0';
+    }
+
+    // constexpr void resize(size_type count)
+    // std::string has this overload, but I don't think this should be provided here
+    // because the default value is surely the null char and including a bunch of those
+    // at the end seems like a bad idea
+
+    constexpr void resize(size_type count, CharT ch)
+    {
+        if (count > N) throw std::bad_alloc{};
+        if (count < d_size) {
+            d_size = count;
+            d_data[d_size] = '\0';
+        } else {
+            // TODO: This can just be a memset + setting the size and null char
+            for (std::size_t i = 0; i < count - d_size; ++i) {
+                unchecked_push_back(ch);
+            }
+        }
+    }
+
+    constexpr void swap(basic_inplace_string& other) noexcept
+    {
+        std::swap(d_data, other.d_data);
+        std::swap(d_size, other.d_size);
     }
 
     // Search
@@ -328,6 +350,44 @@ public:
     }
 
     // Operations
+    constexpr bool starts_with(std::basic_string_view<CharT, Traits> sv) const noexcept
+    {
+        return std::string_view{*this}.starts_with(sv);
+    }
+    constexpr bool starts_with(CharT ch) const noexcept
+    {
+        return std::string_view{*this}.starts_with(ch);
+    }
+    constexpr bool starts_with(const CharT* s) const
+    {
+        return std::string_view{*this}.starts_with(s);
+    }
+
+    constexpr bool ends_with(std::basic_string_view<CharT, Traits> sv) const noexcept
+    {
+        return std::string_view{*this}.ends_with(sv);
+    }
+    constexpr bool ends_with(CharT ch) const noexcept
+    {
+        return std::string_view{*this}.ends_with(ch);
+    }
+    constexpr bool ends_with(const CharT* s) const
+    {
+        return std::string_view{*this}.ends_with(s);
+    }
+
+    constexpr bool contains(std::basic_string_view<CharT, Traits> sv) const noexcept
+    {
+        return std::string_view{*this}.contains(sv);
+    }
+    constexpr bool contains(CharT ch) const noexcept
+    {
+        return std::string_view{*this}.contains(ch);
+    }
+    constexpr bool contains(const CharT* s) const
+    {
+        return std::string_view{*this}.contains(s);
+    }
 };
 
 template <std::size_t N>
